@@ -12,7 +12,7 @@ export const generateTripStory = async (
   }
 
   const genAI = new GoogleGenerativeAI(API_KEY);
-  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
   // 이미지 데이터 준비
   const imageParts = images.map((img) => ({
