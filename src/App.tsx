@@ -69,6 +69,20 @@ const App: React.FC = () => {
     }
   };
 
+  const handleLoadSampleImages = async () => {
+    const sampleImageBase64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
+    const newSlots = slots.map((slot, index) => ({
+      ...slot,
+      image: {
+        base64: sampleImageBase64,
+        mimeType: 'image/png',
+        name: `sample-${index + 1}.png`
+      }
+    }));
+    setSlots(newSlots);
+    setKeywords('호치민의 매력');
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 pb-20 px-4 md:px-8 font-['Noto_Sans_KR']">
       <nav className="max-w-7xl mx-auto py-8 flex justify-between items-center">
