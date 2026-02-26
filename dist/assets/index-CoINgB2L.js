@@ -257,7 +257,7 @@ ${I.map(J=>J.content).join(`
           50% { width: 80%; }
           100% { width: 98%; }
         }
-      `},void 0,!1,{fileName:"/home/ubuntu/trip-story-web/src/components/LoadingOverlay.tsx",lineNumber:43,columnNumber:7},void 0)]},void 0,!0,{fileName:"/home/ubuntu/trip-story-web/src/components/LoadingOverlay.tsx",lineNumber:22,columnNumber:5},void 0)},Sx=async(V,w)=>{const Te="AIzaSyCgemY-bhMY98WTxsG_uHs9O95EeFXDdmg",pe=V.map(Z=>({inlineData:{mimeType:Z.mimeType,data:Z.base64.split(",")[1]}})),Q=`당신은 호텔 고객후기 전문 라이터입니다. 고객이 촬영한 14장의 사진을 분석하여 "노보텔 사이공센터"에 대한 솔직하고 감동적인 고객후기를 작성합니다.
+      `},void 0,!1,{fileName:"/home/ubuntu/trip-story-web/src/components/LoadingOverlay.tsx",lineNumber:43,columnNumber:7},void 0)]},void 0,!0,{fileName:"/home/ubuntu/trip-story-web/src/components/LoadingOverlay.tsx",lineNumber:22,columnNumber:5},void 0)},Sx=async(V,w)=>{const Te="AIzaSyD-_naKh3R01wml4JWUNVcoliaEnDWlo0o",pe=V.map(Z=>({inlineData:{mimeType:Z.mimeType,data:Z.base64.split(",")[1]}})),Q=`당신은 호텔 고객후기 전문 라이터입니다. 고객이 촬영한 14장의 사진을 분석하여 "노보텔 사이공센터"에 대한 솔직하고 감동적인 고객후기를 작성합니다.
 
 [고객후기의 정체성]
 - 실제 고객의 경험과 감정을 중심으로 작성
