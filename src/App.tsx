@@ -5,6 +5,46 @@ import LoadingOverlay from './components/LoadingOverlay';
 import { generateTripStory } from './services/geminiService';
 import { ImageSlot, GenerationState } from './types';
 
+// 글 검증 함수
+const validateArticle = (title: string, content: string, keywords: string) => {
+  const reject_reason: string[] = [];
+  const keywordList = [keywords];
+  
+  // 제목 체크
+  if (!title.startsWith("제목: ")) {
+    reject_reason.push("제목 형식 오류: '제목: '으로 시작해야 합니다");
+  }
+  
+  // 키워드 개수
+  for (const keyword of keywordList) {
+    const count = content.split(keyword).length - 1;
+    if (count !== 5) {
+      reject_reason.push(`'${keyword}' 개수 오류: ${count}회 (필요: 5회)`);
+    }
+  }
+  
+  // 문장 단위 검사
+  const sentences = content.split(/[.!?]\s*/).filter(s => s.trim());
+  for (const sentence of sentences) {
+    // 한 문장에 두 키워드 사용 체크
+    const hits = keywordList.filter(kw => sentence.includes(kw));
+    if (hits.length > 1) {
+      reject_reason.push("한 문장에 두 키워드 사용 금지");
+    }
+    
+    // 메타 문장 체크
+    const dangerWords = ["검색", "추천드립니다", "강조", "무조건", "정답", "꼭", "반드시", "알려드리고"];
+    for (const word of dangerWords) {
+      if (sentence.includes(word) && keywordList.some(kw => sentence.includes(kw))) {
+        reject_reason.push(`메타 문장 사용: '${word}' + 키워드 조합`);
+        break;
+      }
+    }
+  }
+  
+  return reject_reason.length === 0 ? "통과" : reject_reason;
+};
+
 const INITIAL_SLOTS: ImageSlot[] = Array.from({ length: 14 }, (_, i) => ({
   index: i,
   label: `${i + 1}번 사진`,
@@ -39,6 +79,23 @@ const App: React.FC = () => {
 
     try {
       const generatedStory = await generateTripStory(filledImages, keywords);
+      
+      // 생성된 글 검증
+      const titleMatch = generatedStory.match(/제목: (.+?)\n/);
+      const title = titleMatch ? titleMatch[1] : "";
+      const content = generatedStory.replace(/제목: .+?\n/, "").replace(/Business Consultant\n.+?\n\n/, "");
+      
+      const validationResult = validateArticle(title, content, keywords);
+      
+      if (validationResult !== "통과") {
+        const errorMessage = Array.isArray(validationResult) 
+          ? `검증 실패:\\n${validationResult.join("\\n")}`
+          : "검증 실패";
+        console.warn("글 검증 실패:", errorMessage);
+      } else {
+        console.log("✅ 글 검증 통과!");
+      }
+      
       setState({
         isLoading: false,
         story: generatedStory,
