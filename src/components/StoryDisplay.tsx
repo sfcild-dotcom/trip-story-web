@@ -96,17 +96,17 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({ story, keyword = '' }) => {
     const conclusionChars = conclusion?.charsWithoutSpaces || 0;
     const totalChars = stats.totalCharsWithoutSpaces;
     
-    const introPassed = introChars >= 150;
-    const bodyPassed = bodyMinChars >= 100;
-    const conclusionPassed = conclusionChars >= 150;
-    const totalPassed = totalChars >= 1800;
+    const introPassed = introChars >= 200;
+    const bodyPassed = bodyMinChars >= 150;
+    const conclusionPassed = conclusionChars >= 200;
+    const totalPassed = totalChars >= 2450;
     const allPassed = introPassed && bodyPassed && conclusionPassed && totalPassed;
     
     return {
-      introduction: { chars: introChars, passed: introPassed, required: 150 },
-      body: { avgChars: bodyAvgChars, minChars: bodyMinChars, passed: bodyPassed, required: 100 },
-      conclusion: { chars: conclusionChars, passed: conclusionPassed, required: 150 },
-      total: { chars: totalChars, passed: totalPassed, required: 1800 },
+      introduction: { chars: introChars, passed: introPassed, required: 200 },
+      body: { avgChars: bodyAvgChars, minChars: bodyMinChars, passed: bodyPassed, required: 150 },
+      conclusion: { chars: conclusionChars, passed: conclusionPassed, required: 200 },
+      total: { chars: totalChars, passed: totalPassed, required: 2450 },
       allPassed
     };
   };
