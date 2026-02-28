@@ -9,7 +9,6 @@ interface Paragraph {
 
 interface StoryDisplayProps {
   story: string;
-  keyword?: string;
 }
 
 interface WordStats {
@@ -19,17 +18,7 @@ interface WordStats {
   paragraphStats: Array<{ number: number; chars: number; charsWithoutSpaces: number }>;
 }
 
-interface ValidationResult {
-  introduction: { chars: number; passed: boolean; required: number };
-  body: { avgChars: number; minChars: number; passed: boolean; required: number };
-  conclusion: { chars: number; passed: boolean; required: number };
-  total: { chars: number; passed: boolean; required: number };
-  allPassed: boolean;
-}
-
-const CIRCLED_NUMBERS = ['①', '②', '③', '④', '⑤'];
-
-const StoryDisplay: React.FC<StoryDisplayProps> = ({ story, keyword = '' }) => {
+const StoryDisplay: React.FC<StoryDisplayProps> = ({ story }) => {
   const allLines = story.split('\n').map(l => l.trim()).filter(l => l !== '');
   
   let title = "호치민 출장의 완벽한 밸런스: 노보텔 사이공 센터에서의 기록";
@@ -78,79 +67,6 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({ story, keyword = '' }) => {
       paragraphCount: paragraphs.length,
       paragraphStats
     };
-  };
-
-  const validateArticleLength = (): ValidationResult => {
-    const stats = calculateStats();
-    const intro = stats.paragraphStats[0];
-    const bodyParagraphs = stats.paragraphStats.slice(1, -1);
-    const conclusion = stats.paragraphStats[stats.paragraphStats.length - 1];
-    
-    const introChars = intro?.charsWithoutSpaces || 0;
-    const bodyAvgChars = bodyParagraphs.length > 0 
-      ? Math.round(bodyParagraphs.reduce((sum, p) => sum + p.charsWithoutSpaces, 0) / bodyParagraphs.length)
-      : 0;
-    const bodyMinChars = bodyParagraphs.length > 0
-      ? Math.min(...bodyParagraphs.map(p => p.charsWithoutSpaces))
-      : 0;
-    const conclusionChars = conclusion?.charsWithoutSpaces || 0;
-    const totalChars = stats.totalCharsWithoutSpaces;
-    
-    const introPassed = introChars >= 150;
-    const bodyPassed = bodyMinChars >= 100;
-    const conclusionPassed = conclusionChars >= 150;
-    const totalPassed = totalChars >= 1800;
-    const allPassed = introPassed && bodyPassed && conclusionPassed && totalPassed;
-    
-    return {
-      introduction: { chars: introChars, passed: introPassed, required: 150 },
-      body: { avgChars: bodyAvgChars, minChars: bodyMinChars, passed: bodyPassed, required: 100 },
-      conclusion: { chars: conclusionChars, passed: conclusionPassed, required: 150 },
-      total: { chars: totalChars, passed: totalPassed, required: 1800 },
-      allPassed
-    };
-  };
-
-  const countKeywordOccurrences = (): number => {
-    if (!keyword) return 0;
-    const allText = paragraphs.map(p => p.content).join('\n\n');
-    return (allText.match(new RegExp(keyword, 'g')) || []).length;
-  };
-
-  const highlightKeywordWithNumbers = (text: string): React.ReactNode[] => {
-    if (!keyword) return [text];
-    
-    const parts: React.ReactNode[] = [];
-    let lastIndex = 0;
-    let keywordCount = 0;
-    
-    const regex = new RegExp(keyword, 'g');
-    let match;
-    
-    while ((match = regex.exec(text)) !== null) {
-      // 키워드 전 텍스트
-      if (match.index > lastIndex) {
-        parts.push(text.substring(lastIndex, match.index));
-      }
-      
-      // 원숫자 + 키워드
-      keywordCount++;
-      const circledNum = CIRCLED_NUMBERS[keywordCount - 1] || '⑤';
-      parts.push(
-        <span key={`keyword-${match.index}`} className="font-bold text-blue-600">
-          {circledNum}{keyword}
-        </span>
-      );
-      
-      lastIndex = match.index + keyword.length;
-    }
-    
-    // 마지막 텍스트
-    if (lastIndex < text.length) {
-      parts.push(text.substring(lastIndex));
-    }
-    
-    return parts.length > 0 ? parts : [text];
   };
 
   const handleEditParagraph = (id: string) => {
@@ -354,20 +270,6 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({ story, keyword = '' }) => {
                       </div>
                     </div>
 
-                    {/* 키워드 개수 확인 */}
-                    {keyword && (
-                      <div className="bg-white rounded-xl p-6 shadow-sm border-2 border-blue-200">
-                        <p className="text-slate-600 text-sm font-semibold mb-2">키워드 배치 확인</p>
-                        <p className="text-3xl font-black text-blue-600 flex items-center gap-2">
-                          {countKeywordOccurrences()}
-                          <span className="text-lg text-slate-600">/ 5회</span>
-                        </p>
-                        <p className="text-xs text-slate-500 mt-2">
-                          {countKeywordOccurrences() === 5 ? '✅ 정확히 5회 배치됨' : '⚠️ 키워드 개수 확인 필요'}
-                        </p>
-                      </div>
-                    )}
-
                     {/* 문단별 통계 */}
                     <div className="bg-white rounded-xl p-6 border border-slate-200">
                       <h4 className="font-bold text-slate-900 mb-4 text-lg">문단별 글자수</h4>
@@ -394,82 +296,6 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({ story, keyword = '' }) => {
                           </div>
                         ))}
                       </div>
-                    </div>
-
-                    {/* 분량 규칙 검증 */}
-                    <div className="bg-white rounded-xl p-6 border-2 border-slate-200">
-                      <h4 className="font-bold text-slate-900 mb-4 text-lg flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-600" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                        </svg>
-                        분량 규칙 검증
-                      </h4>
-                      {(() => {
-                        const validation = validateArticleLength();
-                        return (
-                          <div className="space-y-3">
-                            <div className={`p-3 rounded-lg flex items-center justify-between ${
-                              validation.introduction.passed 
-                                ? 'bg-green-50 border border-green-200' 
-                                : 'bg-red-50 border border-red-200'
-                            }`}>
-                              <span className="font-semibold text-slate-700">서론 (1번 문단)</span>
-                              <span className={`font-bold ${
-                                validation.introduction.passed ? 'text-green-600' : 'text-red-600'
-                              }`}>
-                                {validation.introduction.chars}자 / {validation.introduction.required}자 이상
-                              </span>
-                            </div>
-                            
-                            <div className={`p-3 rounded-lg flex items-center justify-between ${
-                              validation.body.passed 
-                                ? 'bg-green-50 border border-green-200' 
-                                : 'bg-red-50 border border-red-200'
-                            }`}>
-                              <span className="font-semibold text-slate-700">본문 (2~15번 문단)</span>
-                              <span className={`font-bold ${
-                                validation.body.passed ? 'text-green-600' : 'text-red-600'
-                              }`}>
-                                최소 {validation.body.minChars}자 / {validation.body.required}자 이상 필요
-                              </span>
-                            </div>
-                            
-                            <div className={`p-3 rounded-lg flex items-center justify-between ${
-                              validation.conclusion.passed 
-                                ? 'bg-green-50 border border-green-200' 
-                                : 'bg-red-50 border border-red-200'
-                            }`}>
-                              <span className="font-semibold text-slate-700">결론 (16번 문단)</span>
-                              <span className={`font-bold ${
-                                validation.conclusion.passed ? 'text-green-600' : 'text-red-600'
-                              }`}>
-                                {validation.conclusion.chars}자 / {validation.conclusion.required}자 이상
-                              </span>
-                            </div>
-                            
-                            <div className={`p-3 rounded-lg flex items-center justify-between border-2 ${
-                              validation.total.passed 
-                                ? 'bg-blue-50 border-blue-300' 
-                                : 'bg-orange-50 border-orange-300'
-                            }`}>
-                              <span className="font-bold text-slate-900">전체 분량</span>
-                              <span className={`font-bold text-lg ${
-                                validation.total.passed ? 'text-blue-600' : 'text-orange-600'
-                              }`}>
-                                {validation.total.chars}자 / {validation.total.required}자 이상
-                              </span>
-                            </div>
-                            
-                            <div className={`p-4 rounded-lg text-center font-bold text-lg ${
-                              validation.allPassed
-                                ? 'bg-green-100 text-green-700 border border-green-300'
-                                : 'bg-yellow-100 text-yellow-700 border border-yellow-300'
-                            }`}>
-                              {validation.allPassed ? '✅ 모든 분량 규칙 통과!' : '⚠️ 분량 규칙 미충족 항목 있음'}
-                            </div>
-                          </div>
-                        );
-                      })()}
                     </div>
 
                     {/* 통계 요약 */}
@@ -529,59 +355,85 @@ const StoryDisplay: React.FC<StoryDisplayProps> = ({ story, keyword = '' }) => {
                 </div>
               ) : (
                 <div className="flex gap-4">
-                  <div className="flex-shrink-0">
-                    <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-sm">
-                      {idx + 1}
-                    </div>
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-lg text-slate-700 leading-relaxed font-light">
-                      {highlightKeywordWithNumbers(para.content)}
-                    </p>
-                    {editMode && (
-                      <div className="flex gap-2 mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button
-                          onClick={() => handleEditParagraph(para.id)}
-                          className="px-3 py-1 bg-blue-100 text-blue-600 rounded hover:bg-blue-200 font-semibold text-sm"
-                        >
-                          편집
-                        </button>
-                        <button
-                          onClick={() => handleDeleteParagraph(para.id)}
-                          className="px-3 py-1 bg-red-100 text-red-600 rounded hover:bg-red-200 font-semibold text-sm"
-                        >
-                          삭제
-                        </button>
+                  {editMode && (
+                    <div className="flex flex-col items-center gap-2 pt-1">
+                      <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-600 group-hover:bg-blue-300">
+                        ⋮⋮
                       </div>
-                    )}
+                    </div>
+                  )}
+                  <div className="flex-1">
+                    <p className="text-lg md:text-xl text-slate-700 leading-[1.9] whitespace-pre-wrap font-light">
+                      <span className="font-normal text-slate-500">{idx + 1}. </span>
+                      {para.content}
+                    </p>
                   </div>
+                  {editMode && (
+                    <button
+                      onClick={() => handleEditParagraph(para.id)}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity px-3 py-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 font-bold text-sm"
+                    >
+                      수정
+                    </button>
+                  )}
                 </div>
               )}
             </div>
           ))}
         </article>
 
-        {/* 액션 버튼 */}
-        <div className="flex gap-3 justify-center mt-12 flex-wrap">
-          <button
-            onClick={handleCopy}
-            className="px-6 py-3 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 font-bold transition-all flex items-center gap-2"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M8 3a1 1 0 011-1h2a1 1 0 011 1v1h2a2 2 0 012 2v2h1a1 1 0 110 2h-1v2h1a1 1 0 110 2h-1v2a2 2 0 01-2 2h-2v1a1 1 0 11-2 0v-1H9a2 2 0 01-2-2v-2H6a1 1 0 110-2h1V9H6a1 1 0 110-2h1V5a2 2 0 012-2h2V3zM9 5a1 1 0 00-1 1v6a1 1 0 001 1h6a1 1 0 001-1V6a1 1 0 00-1-1H9z" />
-            </svg>
-            복사
-          </button>
-          <button
-            onClick={handleDownload}
-            className="px-6 py-3 bg-green-100 text-green-600 rounded-lg hover:bg-green-200 font-bold transition-all flex items-center gap-2"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1m3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
-            </svg>
-            다운로드
-          </button>
-        </div>
+        {/* 푸터 */}
+        <footer className="mt-24 pt-12 border-t border-slate-100 flex flex-col items-center">
+          <div className="bg-blue-50/50 rounded-2xl p-8 mb-10 text-center max-w-2xl border border-blue-100">
+            <p className="text-blue-800 text-sm font-bold mb-2">기록 최적화 완료</p>
+            <p className="text-slate-500 text-sm italic leading-relaxed">
+              {editMode ? (
+                <>
+                  <strong>편집 모드 활성화됨</strong><br/>
+                  문단을 드래그하여 순서를 변경하거나, 수정 버튼으로 내용을 편집할 수 있습니다.
+                </>
+              ) : (
+                <>
+                  매번 다른 시각으로 분석된 독창적인 서사와 함께<br/>
+                  <strong>제목, 1~16번 문단 번호, 원숫자 키워드(①~⑤)</strong>가 모두 적용되었습니다.
+                </>
+              )}
+            </p>
+          </div>
+
+          <div className="w-full flex flex-col sm:flex-row justify-center gap-3 flex-wrap">
+            <button
+              onClick={handleCopy}
+              className="group flex items-center justify-center px-8 py-4 bg-blue-600 text-white rounded-2xl hover:bg-blue-700 transition-all font-bold shadow-xl shadow-blue-200 transform hover:-translate-y-1 active:scale-95"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+              </svg>
+              복사하기
+            </button>
+            <button
+              onClick={handleDownload}
+              className="group flex items-center justify-center px-8 py-4 bg-slate-600 text-white rounded-2xl hover:bg-slate-700 transition-all font-bold shadow-xl shadow-slate-200 transform hover:-translate-y-1 active:scale-95"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              다운로드
+            </button>
+            
+            {(() => {
+              const stats = calculateStats();
+              return (
+                <div className="flex items-center gap-2 px-6 py-4 bg-purple-100 text-purple-700 rounded-2xl font-bold shadow-lg">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" />
+                  </svg>
+                  <span>{stats.totalCharsWithoutSpaces.toLocaleString()}자</span>
+                </div>
+              );
+            })()}
+          </div>
+        </footer>
       </div>
     </div>
   );

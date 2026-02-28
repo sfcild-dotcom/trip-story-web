@@ -205,7 +205,7 @@ const App: React.FC = () => {
         
         {state.story && (
           <div id="story-section" className="relative scroll-mt-20">
-            <StoryDisplay story={state.story} />
+            <StoryDisplay story={state.story} keyword={keywords} />
           </div>
         )}
       </main>
