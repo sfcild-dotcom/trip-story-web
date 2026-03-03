@@ -15,8 +15,9 @@ export const generateTripStory = async (
   userKeywords: string
 ): Promise<string> => {
   try {
-    // Vercel API 라우트로 요청
-    const response = await fetch('/api/generate-story', {
+    // Manus 백엔드 서버로 요청
+    const backendUrl = 'https://3001-ioryejvencx35oj59rq37-718f2262.sg1.manus.computer/api/generate-story';
+    const response = await fetch(backendUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
