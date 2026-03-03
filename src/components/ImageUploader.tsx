@@ -33,14 +33,76 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ slots, setSlots, onReset 
   const handleDrop = (e: React.DragEvent, index: number) => {
     e.preventDefault();
     setDragOverIndex(null);
-    const file = e.dataTransfer.files[0];
-    if (file) handleFile(file, index);
+    
+    // 여러 파일이 드래그된 경우 자동 정렬
+    const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+    
+    if (files.length > 1) {
+      // 파일명으로 정렬
+      files.sort((a, b) => a.name.localeCompare(b.name));
+      
+      // 현재 인덱스부터 순서대로 배치
+      const newSlots = [...slots];
+      files.forEach((file, i) => {
+        const slotIndex = index + i;
+        if (slotIndex < 14) {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            const base64 = reader.result as string;
+            const newImage: ImageData = {
+              id: Math.random().toString(36).substr(2, 9),
+              base64,
+              mimeType: file.type,
+              previewUrl: URL.createObjectURL(file)
+            };
+            setSlots(prev => prev.map(slot => 
+              slot.index === slotIndex ? { ...slot, image: newImage } : slot
+            ));
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    } else if (files.length === 1) {
+      handleFile(files[0], index);
+    }
   };
 
   const removeImage = (index: number) => {
     setSlots(prev => prev.map(slot => 
       slot.index === index ? { ...slot, image: null } : slot
     ));
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
+    const files = Array.from(e.target.files || []).filter(f => f.type.startsWith('image/'));
+    
+    if (files.length > 1) {
+      // 파일명으로 정렬
+      files.sort((a, b) => a.name.localeCompare(b.name));
+      
+      // 현재 인덱스부터 순서대로 배치
+      files.forEach((file, i) => {
+        const slotIndex = index + i;
+        if (slotIndex < 14) {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            const base64 = reader.result as string;
+            const newImage: ImageData = {
+              id: Math.random().toString(36).substr(2, 9),
+              base64,
+              mimeType: file.type,
+              previewUrl: URL.createObjectURL(file)
+            };
+            setSlots(prev => prev.map(slot => 
+              slot.index === slotIndex ? { ...slot, image: newImage } : slot
+            ));
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    } else if (files.length === 1) {
+      handleFile(files[0], index);
+    }
   };
 
   const hasAnyImage = slots.some(s => s.image);
@@ -85,6 +147,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ slots, setSlots, onReset 
                 ? 'border-slate-200 bg-slate-50' 
                 : 'border-slate-200 hover:border-blue-400 hover:bg-blue-50'}
             `}
+            onClick={() => document.getElementById(`file-input-${slot.index}`)?.click()}
           >
             {slot.image ? (
               <>
@@ -97,6 +160,14 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ slots, setSlots, onReset 
                   onClick={() => removeImage(slot.index)}
                   className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
                 >
+                  <input
+                    id={`file-input-${slot.index}`}
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={(e) => handleInputChange(e, slot.index)}
+                    className="hidden"
+                  />
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                   </svg>
@@ -104,7 +175,15 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ slots, setSlots, onReset 
               </>
             ) : (
               <label className="w-full h-full flex flex-col items-center justify-center cursor-pointer">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-slate-400 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                 <input
+                  id={`file-input-${slot.index}`}
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={(e) => handleInputChange(e, slot.index)}
+                  className="hidden"
+                />
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">or">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
                 <span className="text-xs text-slate-500 font-medium">{slot.index + 1}</span>
