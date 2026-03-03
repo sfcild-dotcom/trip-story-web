@@ -4,6 +4,14 @@
  * 프론트엔드는 이 엔드포인트로 요청만 함
  */
 
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '50mb',
+    },
+  },
+};
+
 export default async function handler(req, res) {
   // CORS 설정
   res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -21,6 +29,12 @@ export default async function handler(req, res) {
 
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  // 요청 크기 체크
+  const contentLength = parseInt(req.headers['content-length'] || '0', 10);
+  if (contentLength > 50 * 1024 * 1024) {
+    return res.status(413).json({ error: 'Request entity too large' });
   }
 
   try {
