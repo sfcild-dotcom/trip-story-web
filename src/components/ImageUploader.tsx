@@ -183,7 +183,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ slots, setSlots, onReset 
                   onChange={(e) => handleInputChange(e, slot.index)}
                   className="hidden"
                 />
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">or">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
                 <span className="text-xs text-slate-500 font-medium">{slot.index + 1}</span>

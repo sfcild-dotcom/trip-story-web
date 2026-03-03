@@ -9,11 +9,18 @@ export default defineConfig({
     sourcemap: false,
   },
   server: {
-    port: 5173,
+    port: 5175,
     open: true,
-    host: '0.0.0.0',
+    host: '127.0.0.1',
     middlewareMode: false,
-    cors: true,
-    allowedHosts: ['5176-ioryejvencx35oj59rq37-718f2262.sg1.manus.computer'],
+    hmr: {
+      host: '5175-ioryejvencx35oj59rq37-718f2262.sg1.manus.computer',
+      protocol: 'https',
+    },
+    cors: {
+      origin: true,
+      credentials: true,
+    },
+    allowedHosts: ['5175-ioryejvencx35oj59rq37-718f2262.sg1.manus.computer', '5176-ioryejvencx35oj59rq37-718f2262.sg1.manus.computer', '5177-ioryejvencx35oj59rq37-718f2262.sg1.manus.computer', 'localhost'],
   },
 })
