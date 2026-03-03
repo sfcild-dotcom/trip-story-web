@@ -3,6 +3,7 @@ import ImageUploader from './components/ImageUploader';
 import StoryDisplay from './components/StoryDisplay';
 import LoadingOverlay from './components/LoadingOverlay';
 import { generateTripStory } from './services/geminiService';
+import { compressImages } from './utils/imageCompression';
 import { ImageSlot, GenerationState } from './types';
 
 // 글 검증 함수
@@ -78,7 +79,9 @@ const App: React.FC = () => {
     setState({ ...state, isLoading: true, error: null });
 
     try {
-      const generatedStory = await generateTripStory(filledImages, keywords);
+      // 이미지 압축
+      const compressedImages = await compressImages(filledImages);
+      const generatedStory = await generateTripStory(compressedImages, keywords);
       
       // 생성된 글 검증
       const titleMatch = generatedStory.match(/제목: (.+?)\n/);
